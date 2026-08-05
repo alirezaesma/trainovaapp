@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<!-- No-cache headers via meta tags (belt + suspenders) -->
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+<meta http-equiv="Pragma" content="no-cache"/>
+<meta http-equiv="Expires" content="0"/>
+<meta name="robots" content="noindex, nofollow"/>
+<title>Trainova — پاک‌سازی کش و Service Worker</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'Vazirmatn', system-ui, -apple-system, Tahoma, sans-serif;
+    background:
+      radial-gradient(1200px 600px at 100% -10%, rgba(255,107,53,0.15), transparent 60%),
+      radial-gradient(1000px 500px at 0% 110%, rgba(220,38,38,0.10), transparent 55%),
+      #08080a;
+    color: #eff2f5;
+    min-height: 100vh;
+    padding: 24px 16px;
+    line-height: 1.6;
+  }
+  .wrap {
+    max-width: 640px;
+    margin: 20px auto;
+    padding: 32px 24px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 20px;
+    box-shadow: 0 20px 60px -20px rgba(0,0,0,0.6);
+  }
+  .logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .logo-mark {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #ff6b35, #dc2626);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900; color: #001821; font-size: 22px;
+    box-shadow: 0 8px 20px -6px rgba(255,107,53,0.5);
+  }
+  .logo b { font-size: 18px; }
+  .logo small { color: #94a3b8; font-size: 12px; display: block; }
+  h1 { font-size: 22px; margin: 0 0 8px; font-weight: 900; }
+  p.lead { color: #cbd5e1; margin: 0 0 20px; font-size: 14px; line-height: 1.8; }
+  #status {
+    margin-top: 16px;
+    padding: 16px;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    min-height: 120px;
+    line-height: 1.8;
+    direction: ltr;
+    text-align: left;
+  }
+  #status .ok { color: #6ee7b7; }
+  #status .warn { color: #fbbf24; }
+  #status .err { color: #fca5a5; }
+  #status .info { color: #94a3b8; }
+  .spinner {
+    display: inline-block;
+    width: 14px; height: 14px;
+    border: 2px solid rgba(255,255,255,0.2);
+    border-top-color: #ff6b35;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .btn {
+    display: inline-block;
+    background: linear-gradient(135deg, #ff6b35, #dc2626);
+    color: #001821;
+    text-decoration: none;
+    padding: 12px 28px;
+    border-radius: 10px;
+    font-weight: 800;
+    font-size: 14px;
+    margin-top: 16px;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .btn:hover { opacity: 0.92; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .note {
+    margin-top: 20px;
+    padding: 12px 16px;
+    background: rgba(239,68,68,0.08);
+    border: 1px solid rgba(239,68,68,0.25);
+    border-radius: 10px;
+    color: #fca5a5;
+    font-size: 12px;
+    line-height: 1.8;
+  }
+  .note b { color: #fff; }
+  kbd {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-family: monospace;
+    font-size: 11px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="logo">
+    <div class="logo-mark">T</div>
+    <div>
+      <b>Trainova</b>
+      <small>پاک‌سازی کش و Service Worker</small>
+    </div>
+  </div>
+
+  <h1>در حال پاک‌سازی...</h1>
+  <p class="lead">
+    این صفحه تمام Service Workerها و کش‌های قدیمی نسخه v9 رو پاک می‌کنه تا نسخه جدید v10 به‌درستی بارگذاری بشه.
+    این عمل چند ثانیه طول می‌کشه — صبر کنید.
+  </p>
+
+  <div id="status"><span class="info">شروع پاک‌سازی...<span class="spinner"></span></span></div>
+
+  <button class="btn" id="goBtn" disabled>رفتن به سایت ←</button>
+
+  <div class="note">
+    <b>چرا این مشکل پیش اومد؟</b><br/>
+    نسخه قبلی (v9) یک Service Worker داشت که سایت رو برای استفاده آفلاین کش می‌کرد. وقتی v10 رو آپلود کردید،
+    اون SW قدینی هنوز فعال بود و نسخه کش‌شده v9 رو سرو می‌کرد. پاک کردن کش مرورگر کافی نیست —
+    Service Workerها جدا از کش عادی ذخیره می‌شن و باید جداگانه unregister بشن.
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var status = document.getElementById("status");
+  var goBtn = document.getElementById("goBtn");
+
+  function log(msg, type){
+    var div = document.createElement("div");
+    div.className = type || "info";
+    div.innerHTML = msg;
+    status.appendChild(div);
+    status.scrollTop = status.scrollHeight;
+  }
+
+  function clearAll(){
+    return (async function(){
+      var cleaned = false;
+
+      // 1. Unregister ALL service workers
+      try {
+        if ("serviceWorker" in navigator) {
+          var regs = await navigator.serviceWorker.getRegistrations();
+          log("✓ تعداد Service Worker پیدا شده: " + regs.length, "ok");
+          for (var i = 0; i < regs.length; i++) {
+            try {
+              await regs[i].unregister();
+              log("  ✓ حذف شد: " + regs[i].scope, "ok");
+              cleaned = true;
+            } catch(e) {
+              log("  ✗ خطا در حذف: " + e.message, "err");
+            }
+          }
+        } else {
+          log("• Service Worker پشتیبانی نمی‌شه", "warn");
+        }
+      } catch(e) {
+        log("✗ خطا: " + e.message, "err");
+      }
+
+      // 2. Clear ALL caches
+      try {
+        if ("caches" in window) {
+          var keys = await caches.keys();
+          log("✓ تعداد کش پیدا شده: " + keys.length, "ok");
+          for (var j = 0; j < keys.length; j++) {
+            try {
+              await caches.delete(keys[j]);
+              log("  ✓ کش حذف شد: " + keys[j], "ok");
+              cleaned = true;
+            } catch(e) {
+              log("  ✗ خطا: " + e.message, "err");
+            }
+          }
+        }
+      } catch(e) {
+        log("✗ خطا در caches: " + e.message, "err");
+      }
+
+      // 3. Clear cookieStorage (try)
+      try {
+        // Clear cookies for this domain
+        document.cookie.split(";").forEach(function(c){
+          var eq = c.indexOf("=");
+          var name = eq > -1 ? c.substr(0, eq).trim() : c.trim();
+          document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+          document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=" + window.location.hostname;
+          document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=." + window.location.hostname;
+        });
+        log("✓ کوکی‌ها پاک شدند", "ok");
+      } catch(e) {}
+
+      // 4. Note about localStorage — DO NOT clear, keep user data
+      log("• داده‌های localStorage شما (پروفایل، برنامه‌ها) حفظ شدند", "info");
+
+      // Done
+      log("", "info");
+      log("✓ پاک‌سازی کامل شد!", "ok");
+      log("حالا می‌تونی به سایت بری — نسخه جدید v10 بارگذاری می‌شه.", "info");
+
+      goBtn.disabled = false;
+      goBtn.textContent = "✓ رفتن به سایت v10 ←";
+
+      // Auto-redirect after 2.5s
+      setTimeout(function(){
+        window.location.replace("/?nocache=" + Date.now());
+      }, 2500);
+    })();
+  }
+
+  goBtn.addEventListener("click", function(){
+    window.location.replace("/?nocache=" + Date.now());
+  });
+
+  // Start cleanup
+  clearAll().catch(function(e){
+    log("✗ خطای غیرمنتظره: " + e.message, "err");
+    goBtn.disabled = false;
+  });
+})();
+</script>
+</body>
+</html>

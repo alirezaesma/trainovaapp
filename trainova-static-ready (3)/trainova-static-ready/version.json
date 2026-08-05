@@ -1,0 +1,7 @@
+{
+  "version": "10",
+  "build_time": "2026-07-26",
+  "name": "Trainova",
+  "kill_switch": true,
+  "description": "پلتفرم هوشمند تمرین و تناسب اندام — نسخه ۱۰ با kill switch برای پاک‌سازی SW قدیمی"
+}
