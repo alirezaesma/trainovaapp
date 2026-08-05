@@ -1,10 +1,17 @@
 {
-  "version": "10.2",
+  "version": "10.3",
   "build_time": "2026-07-26",
   "name": "Trainova",
   "kill_switch": true,
-  "description": "پلتفرم هوشمند تمرین و تناسب اندام — نسخه ۱۰.۲ با بهبودهای UX/UI حرفه‌ای",
+  "description": "پلتفرم هوشمند تمرین و تناسب اندام — نسخه ۱۰.۳ با سیستم هوشمند پاک‌سازی کش",
   "changelog": {
+    "v10.3": [
+      "سیستم هوشمند Network-First برای Service Worker",
+      "صفحه force-update.html برای پاک‌سازی دستی کش",
+      "جلوگیری از اجرای آفلاین وقتی اینترنت موجود است",
+      "پاک‌سازی خودکار تمام کش‌های قدیمی",
+      "ریدایرکت اجباری به نسخه جدید از سرور"
+    ],
     "v10.2": [
       "صفحه Loading با انیمیشن‌های مدرن",
       "صفحه Welcome با معرفی ویژگی‌ها",
@@ -35,15 +42,23 @@
     "تحلیل پیشرفت تمرینات",
     "پشتیبانی کامل آفلاین",
     "رابط کاربری مدرن و حرفه‌ای",
-    "انیمیشن‌های Smooth"
+    "انیمیشن‌های Smooth",
+    "سیستم هوشمند جلوگیری از کش قدیمی"
   ],
   "ui_improvements": [
     "صفحه Loading با انیمیشن لوگو",
     "صفحه Welcome با کارت‌های ویژگی",
     "صفحه 404 با طراحی جذاب",
     "دکمه‌های Modern با Hover Effects",
-    "گرادینت‌های هماهنگ با برند"
+    "گرادینت‌های هماهنگ با برند",
+    "صفحه Force Update با وضعیت لحظه‌ای"
   ],
+  "cache_strategy": {
+    "mode": "network-first",
+    "fallback": "cache-only-when-offline",
+    "auto_cleanup": true,
+    "force_reload_on_update": true
+  },
   "contact": {
     "support_email": "support@trainova.ir",
     "website": "https://trainova.ir"
